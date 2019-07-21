@@ -12,4 +12,4 @@ make
 make install
 
 #setenv
-echo `export PATH=/shared/mpich/bin:$PATH` >> ~/.bashrc
+echo "export PATH=/shared/mpich/bin:$PATH" >> ~/.bashrc

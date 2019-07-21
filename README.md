@@ -66,7 +66,7 @@ aws_region_name = cn-northwest-1
 [cluster WRFcluster]
 vpc_settings = prod
 key_name = key-cn-northwest-1
-extra_json = { "cluster" : { "cfn_scheduler_slots" : "cores" } }
+extra_json = { "cluster" : { "cfn_scheduler_slots" : "cores", "ganglia_enabled" : "yes" } }
 ## 自己的脚本地址
 post_install = s3://wrfcluster-demo/pcluster_postinstall.sh
 ## 自己的S3桶ARN
@@ -77,20 +77,20 @@ compute_instance_type = c5.9xlarge
 master_instance_type = c5.9xlarge
 ## 根卷大小
 master_root_volume_size = 100
+## 计算节点根卷大小，需大于ami需要，选填
+compute_root_volume_size = 100
 ## AutoScailing设置，选填
 scaling_settings = WRF-ASG
 ## 初始队列大小，默认为2，选填
 initial_queue_size = 1
 ## 最大队列容量，默认10，选填
 max_queue_size = 2
-## 开启ganglia
-extra_json = { "cluster" : { "ganglia_enabled" : "yes" } }
 placement = cluster
 placement_group = DYNAMIC
 cluster_type = ondemand
 base_os = alinux
 ## 数据卷配置
-ebs_settings=wrf-ebs
+ebs_settings = wrf-ebs
 
 #auto scaling设置
 [scaling WRF-ASG]
