@@ -4,7 +4,7 @@
 #install
 source ~/.bashrc
 cd /shared
-wget http://www2.mmm.ucar.edu/wrf/OnLineTutorial/compile_tutorial/tar_files/mpich-3.0.4.tar.gz
+wget https://wrf-softwares.s3.cn-northwest-1.amazonaws.com.cn/mpich-3.0.4.tar.gz
 tar xzvf mpich-3.0.4.tar.gz
 cd mpich-3.0.4
 ./configure --prefix=/shared/mpich

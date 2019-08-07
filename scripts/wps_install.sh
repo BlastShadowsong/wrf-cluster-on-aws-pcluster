@@ -3,9 +3,9 @@
 cd /shared
 mkdir WPS
 cd WPS
-wget http://www2.mmm.ucar.edu/wrf/src/WPSV4.0.TAR.gz
-gunzip WPSV4.0.TAR.gz
-tar -xf WPSV4.0.TAR
+wget https://wrf-softwares.s3.cn-northwest-1.amazonaws.com.cn/WPS-4.1.tar.gz
+gunzip WPS-4.1.tar.gz
+tar -xf WPS-4.1.tar
 cd WPS
 ./clean
 

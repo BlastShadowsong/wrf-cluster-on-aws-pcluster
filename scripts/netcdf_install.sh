@@ -14,7 +14,7 @@ EOF
 #install
 source ~/.bashrc
 cd /shared
-wget http://www2.mmm.ucar.edu/wrf/OnLineTutorial/compile_tutorial/tar_files/netcdf-4.1.3.tar.gz
+wget https://wrf-softwares.s3.cn-northwest-1.amazonaws.com.cn/netcdf-4.1.3.tar.gz
 tar xvf netcdf-4.1.3.tar.gz
 cd netcdf-4.1.3
 ./configure --prefix=/shared/netcdf --disable-netcdf-4 --disable-dap --disable-shared

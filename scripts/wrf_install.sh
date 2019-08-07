@@ -4,7 +4,7 @@ source ~/.bashrc
 cd /shared
 mkdir WRF
 cd WRF
-wget http://www2.mmm.ucar.edu/wrf/src/WRFV3.8.1.TAR.gz
-tar xvf WRFV3.8.1.TAR.gz
+wget https://wrf-softwares.s3.cn-northwest-1.amazonaws.com.cn/WRF-4.1.2.tar.gz
+tar xvf WRF-4.1.2.tar.gz
 cd WRFV3
 ./configure
