@@ -22,7 +22,7 @@ $ aws configure
 AWS Access Key ID [None]: ABCD***********
 AWS Secret Access Key [None]: wJalrX********
 Default region name [us-east-1]: cn-northwest-1
-Default output format [None]:
+Default output format [None]: json
 ```
 pcluster初始化
 ```
@@ -31,21 +31,21 @@ $ pcluster configure
 Configure 向导将带领你一步一步创建你的集群
 ```
 Cluster Template [default]: WRFcluster //集群名
-Acceptable Values for AWS Region ID: 
+Acceptable Values for AWS Region ID:
     cn-north-1
     cn-northwest-1
 AWS Region ID []: cn-northwest-1 //选择部署区域，示例选择的是宁夏区域
 VPC Name [public]: prod //命名VPC
-Acceptable Values for Key Name: 
+Acceptable Values for Key Name:
     handson
     key-cn-northwest-1
 Key Name []: key-cn-northwest-1 //选择一个密钥
-Acceptable Values for VPC ID: 
+Acceptable Values for VPC ID:
     vpc-0f1ddb64137540bed
     vpc-503dce39
     vpc-0f48cd7c866f11bf0
 VPC ID []: vpc-503dce39 //选择一个VPC
-Acceptable Values for Master Subnet ID: 
+Acceptable Values for Master Subnet ID:
     subnet-41001e39
     subnet-40a46129
     subnet-2486a76e
@@ -74,7 +74,7 @@ s3_read_write_resource = arn:aws-cn:s3:::wrfcluster-demo/*
 ## 计算节点类型
 compute_instance_type = c5.9xlarge
 ## 主节点类型
-master_instance_type = c5.9xlarge
+master_instance_type = m5.xlarge
 ## 根卷大小
 master_root_volume_size = 100
 ## 计算节点根卷大小，需大于ami需要，选填
@@ -89,6 +89,8 @@ placement = cluster
 placement_group = DYNAMIC
 cluster_type = ondemand
 base_os = alinux
+## 调度工具配置
+scheduler = torque
 ## 数据卷配置
 ebs_settings = wrf-ebs
 
@@ -139,7 +141,7 @@ $ sh script/netcdf_install.sh
 ```
 $ sh script/mpich_install.sh
 ```
-安装WRF 3.8.1
+安装WRF 4.1.2
 ```
 $ sh scripts/wrf_install.sh
 ```
@@ -167,7 +169,7 @@ Please select from among the following Linux x86_64 options:
  64. (serial)  65. (smpar)  66. (dmpar)  67. (dm+sm)   INTEL (ifort/icc): HSW/BDW
  68. (serial)  69. (smpar)  70. (dmpar)  71. (dm+sm)   INTEL (ifort/icc): KNL MIC
 ```
-选择“34” (dmpar)，然后再选择 “1” 
+选择“34” (dmpar)，然后再选择 “1”
 ```
 Enter selection [1-71] : 34
 ------------------------------------------------------------------------
@@ -200,17 +202,17 @@ $ ./compile em_real 2>&1 | tee compile.log
 ==========================================================================
 build started:   Fri Jul 19 12:16:09 UTC 2019
 build completed: Fri Jul 19 12:21:41 UTC 2019
- 
+
 --->                  Executables successfully built                  <---
- 
+
 -rwxrwxr-x 1 ec2-user ec2-user 38094992 Jul 19 12:21 main/ndown.exe
 -rwxrwxr-x 1 ec2-user ec2-user 37975624 Jul 19 12:21 main/real.exe
 -rwxrwxr-x 1 ec2-user ec2-user 37595344 Jul 19 12:21 main/tc.exe
 -rwxrwxr-x 1 ec2-user ec2-user 41805008 Jul 19 12:21 main/wrf.exe
- 
+
 ==========================================================================
 ```
-安装WPS 4.0
+安装WPS 4.1
 ```
 $ sh wps_install.sh
 ```
@@ -289,7 +291,7 @@ $ ./compile 2>&1 | tee compile.log
 1. 删除上传至S3中的资源
 2. 运行以下命令，删除AWS ParallelCluster创建的全部资源
 ```
-$ pcluster delete WRFcluster 
+$ pcluster delete WRFcluster
 ```
 
 #### 参考资料
