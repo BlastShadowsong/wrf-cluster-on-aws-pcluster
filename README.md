@@ -11,12 +11,18 @@ AWS ParallelCluster详细安装过程可以参见[链接](https://aws-parallelcl
 $ pip install aws-parallelcluster --user
 ```
 
+可以用 pip --version 查看是否已经安装pip，如果没有安装可以使用以下命令安装，参见[链接](https://pip.pypa.io/en/stable/installing）
+```
+$ curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py
+$ python get-pip.py --user
+```
+
 ##### 配置 AWS ParallelCluster
 先安装[AWS CLI](https://docs.aws.amazon.com/cli/latest/userguide/cli-chap-configure.html)
 ```
 $ pip install awscli --user
 ```
-并进行IAM Credentials设置
+然后进行IAM Credentials设置, IAM Credentials可以从IAM控制台中IAM User中获取，建议给Administrator权限以便调动ParallelCluster需要的所有资源。
 ```
 $ aws configure
 AWS Access Key ID [None]: ABCD***********
@@ -58,7 +64,9 @@ Master Subnet ID []: subnet-41001e39 //选择子网
 * 点击创建的存储桶
 * 点击上传，上传`pcluster_postinstall.sh`
 
-编辑pcluster的配置
+编辑pcluster的配置, 使用vim ~/.parallelcluster/config命令。
+pcluster configure时已经设置了VPC、subnet等信息，依然沿用之前的设置；从extra_date到volume_size部分可以直接复制粘贴示例脚本，添加到config文件中间部分。
+修改post_install为上一步文件上传的s3位置。
 ```
 [aws]
 aws_region_name = cn-northwest-1
@@ -121,6 +129,8 @@ ssh = ssh {CFN_USER}@{MASTER_IP} {ARGS}
 ```
 $ pcluster create WRFcluster
 ```
+等待集群创建完成。如果集群创建失败，请检查相应Region的EC2限制是否小于设定的集群最大节点数，如果受限于EC2 limit，可以开support case提高limit，或者修改设置降低最大节点数。
+
 #### WRF及相关库的安装
 * * *
 通过ssh登陆到Master节点
@@ -132,16 +142,24 @@ $ ssh -i "key-cn-northwest-1.pem" ec2-user@ec2-x-x-x-x.cn-northwest-1.compute.am
 $ sudo yum upgrade -y \
 && sudo yum install gcc64-gfortran.x86_64 libgfortran.x86_64 jasper jasper-libs.x86_64 jasper-devel.x86_64 libpng-devel.x86_64 -y
 ```
+
+将这个仓库下载到本地，例如共享卷/shared目录下，然后进入相应目录
+```
+$ cd /shared
+$ git clone https://github.com/BlastShadowsong/wrf-cluster-on-aws-pcluster.git
+$ cd wrf-cluster-on-aws-pcluster/
+```
+
 依次安装NetCDF 4.1.3, MPICH 3.0.4
 * NetCDF
 ```
-$ sh script/netcdf_install.sh
+$ sh scripts/netcdf_install.sh
 ```
 * MPICH
 ```
-$ sh script/mpich_install.sh
+$ sh scripts/mpich_install.sh
 ```
-安装WRF 4.1.2
+安装WRF 4.0
 ```
 $ sh scripts/wrf_install.sh
 ```
@@ -193,7 +211,6 @@ em_scm_xy (1d ideal case)
 ```
 在本次实验中选择em_real模式
 ```
-$ cd /shared/WRF/WRFV3
 $ source ~/.bashrc
 $ ./compile em_real 2>&1 | tee compile.log
 ```
@@ -212,9 +229,9 @@ build completed: Fri Jul 19 12:21:41 UTC 2019
 
 ==========================================================================
 ```
-安装WPS 4.1
+安装WPS 4.0
 ```
-$ sh wps_install.sh
+$ sh scripts/wps_install.sh
 ```
 选项列表
 ```
