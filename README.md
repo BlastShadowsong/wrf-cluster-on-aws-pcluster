@@ -211,6 +211,7 @@ em_scm_xy (1d ideal case)
 ```
 在本次实验中选择em_real模式
 ```
+$ cd /shared/WRF/WRF
 $ source ~/.bashrc
 $ ./compile em_real 2>&1 | tee compile.log
 ```
@@ -286,11 +287,11 @@ $ vim configure.wps
 ```
 * 找到其中指定WRF路径的两行
 ```
-WRF_DIR = ../WRF
+WRF_DIR = ../../WRF/WRF
 ```
 * 修改为
 ```
-WRF_DIR = ／shared/WRF/WRFV3
+WRF_DIR = ../../WRF/WRF
 ```
 编译WPS
 ```
@@ -304,7 +305,132 @@ $ ./compile 2>&1 | tee compile.log
 
 到此，我们完成WRF的全部安装过程，你可以基于已有的数据进行相关的实验了
 
+#### WRF的运行与并行计算
+* * *
+##### 下载实验数据
+1. 下载静态地理数据，在/shared 目录下新建文件夹Build_WRF，下载到其中，可从官方网站获取：http://www2.mmm.ucar.edu/wrf/users/download/get_sources_wps_geog.html
+```
+$ cd /shared
+$ mkdir Build_WRF
+$ cd Build_WRF
+$ wget http://www2.mmm.ucar.edu/wrf/users/download/get_sources_wps_geog.html
+```
+
+然后解压缩静态地理数据，并取消tar文件，2.6G的文件最终会成为29G的文件。文件较大，需要等待一段时间。解压缩后的文件名称为WPS_GEOG
+```
+$ gunzip geog_high_res_mandatory.tar.gz
+$ tar -xf geog_high_res_mandatory.tar
+```
+
+然后修改 namelist.wps 文件中的 &geogrid 部分，将静态文件目录提供给geogrid程序。
+```
+$ cd /shared/WPS/WPS
+$ vim namelist.wps
+$ geog_data_path =' shared/Build_WRF/WPS_GEOG/'
+```
+
+2. 下载实时数据，可从官方网站获取：ftp://ftpprd.ncep.noaa.gov/pub/data/nccf/com/gfs/prod
+在 /shared/Build_WRF 目录下创建一个目录 DATA，将实时数据下载到 DATA 中。
+本例中下载2019年8月1日的f000、f006、f012三个数据作为测试数据，您可以根据自己的需求选择其他实时数据用于测试。
+```
+$ cd /shared/Build_WRF
+$ mkdir DATA
+$ cd DATA
+$ wget ftp://ftpprd.ncep.noaa.gov/pub/data/nccf/com/gfs/prod/gfs.20190801/00/gfs.t00z.pgrb2.0p50.f000
+$ mv gfs.t00z.pgrb2.0p50.f000 GFS_00h
+$ wget ftp://ftpprd.ncep.noaa.gov/pub/data/nccf/com/gfs/prod/gfs.20190801/00/gfs.t00z.pgrb2.0p50.f006
+$ mv gfs.t00z.pgrb2.0p50.f006 GFS_06h
+$ wget ftp://ftpprd.ncep.noaa.gov/pub/data/nccf/com/gfs/prod/gfs.20190801/00/gfs.t00z.pgrb2.0p50.f012
+$ mv gfs.t00z.pgrb2.0p50.f012 GFS_12h
+```
+
+##### 运行WPS
+1. 运行geogrid，转到WPS目录中
+```
+$ cd /shared/WPS/WPS
+$ ./geogrid.exe>＆log.geogrid
+```
+这一步运行成功的标志是创建了 geo_em.* 文件，在本例中为 geo_em.d01.nc 和 geo_em.d02.nc
+
+2. 运行ungrib，首先修改链接到GFS和Vtables的正确位置
+```
+$ ./link_grib.csh /shared/Build_WRF/DATA/
+$ ln -sf ungrib/Variable_Tables/Vtable.GFS Vtable
+```
+
+然后修改 namelist.wps 文件的 start_date 和 end_date，与实时数据相契合
+```
+start_date = '2019-08-01_00:00:00','2019-08-01_00:00:00',
+end_date   = '2019-08-01_12:00:00','2019-08-01_12:00:00',
+```
+
+然后运行ungrib
+```
+$ ./ungrib.exe
+```
+这一步运行成功的标志是创建了 FILE:* 文件，在本例中为 FILE:2019-08-01_00、FILE:2019-08-01_06、FILE:2019-08-01_12
+
+3. 运行metgrid
+```
+$ ./metgrid.exe>＆log.metgrid
+```
+这一步运行成功的标志是创建了 met_em* 文件
+
+
+#### 运行WRF
+1. 进入WRF目录，将 met_em.* 文件复制到工作目录
+```
+$ cd /shared/WRF/WRF/run
+$ cp /shared/WPS/WPS/met_em* /shared/WRF/WRF/run/
+```
+
+2. 修改 namelist.input 文件中的开始和结束时间，每一行三项设置为相同时间，开始和结束时间与实时数据相契合；修改 num_metgrid_levels 参数为34，与实时数据相契合。
+
+3. 运行real程序
+```
+$ mpirun -np 1 ./real.exe
+```
+检查输出文件以确保运行成功，运行成功后会看到每个域的 wrfbdy_d01 和 wrfinput_d0* 文件。如果有错误，根据文件中的提示修改 namelist.input 文件中的参数。
+```
+$ tail rsl.error.0000
+```
+
+4. 运行WRF，可自行修改 np 参数，但要小于实例的物理核数。
+```
+$ mpirun -np 8 ./wrf.exe
+```
+运行成功的标志是 rsl.out.0000 文件中有 SUCCESS结尾，并生成 wrfout* 文件。
+
+5. 制作任务脚本
+```
+$ vim job.sh
+```
+任务脚本的内容为
+```
+#!/bin/bash
+#PBS -N WRF
+#PBS -l nodes=1:ppn=18
+#PBS -o wrf.out
+#PBS -e wrf.err
+echo "Start time: "
+date
+cd /shared/WRF/WRF/run
+/shared/mpich/bin/mpirun /shared/WRF/WRF/run/wrf.exe
+echo "End time: "
+date
+```
+其中 PBS -N 为任务名称，-l 控制并行节点数和每个节点的计算核数，-o 和 -e 为结果日志和错误日志的输出位置。这些参数都可以结合实际需求灵活更改。
+
+6. 提交任务到计算节点
+```
+$ qsub job.sh
+```
+之后可以用 qnodes 命令查看节点情况，用 qstat 命令查看任务运行情况，通过 rsl.out.0000 查看运行过程。
+任务运行完成后，可以在生成的 wrf.out 文件中查看运行起止时间，来计算实际运行时长。
+
+
 #### 实验环境销毁
+* * *
 1. 删除上传至S3中的资源
 2. 运行以下命令，删除AWS ParallelCluster创建的全部资源
 ```
