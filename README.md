@@ -1,7 +1,7 @@
 ### 使用ParallelCluster 安装 WRF(Weather Research and Forecasting) 集群
 [AWS ParallelCluster](https://docs.aws.amazon.com/zh_cn/parallelcluster/latest/ug/what-is-aws-parallelcluster.html) 是一个 AWS 支持的开源集群管理工具，它可帮助您在 AWS 云中部署和管理高性能计算 (HPC) 集群。AWS ParallelCluster 在开源 CfnCluster 项目上构建，可让您快速在 AWS 中构建 HPC 计算环境。它自动设置所需的计算资源和共享文件系统。可以将 AWS ParallelCluster 与各种批处理计划程序（例如 AWS Batch、SGE、Torque 和 Slurm）结合使用。
 
-本文将介绍如何使用AWS ParallelCluster 快速构建HPC集群
+本文将介绍如何使用AWS ParallelCluster 在中国区快速构建WRF集群，开始WRF气象预测。
 
 #### AWS ParallelCluster 安装
 * * *
